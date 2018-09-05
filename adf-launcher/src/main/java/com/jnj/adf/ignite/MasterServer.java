@@ -12,7 +12,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Start master server node
- *
+ * -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -Xms512m -Xmx521m -DIGNITE_H2_DEBUG_CONSOLE=true
+ * -DIGNITE_H2_DEBUG_CONSOLE=true open H2 debug console
  * @author Tang
  */
 public class MasterServer {

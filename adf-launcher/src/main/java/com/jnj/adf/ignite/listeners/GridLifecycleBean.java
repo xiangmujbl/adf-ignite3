@@ -42,6 +42,8 @@ public class GridLifecycleBean implements LifecycleBean {
             case AFTER_NODE_STOP:
                 logger.info("Node is stopping!!");
                 break;
+            default:
+                break;
         }
     }
 

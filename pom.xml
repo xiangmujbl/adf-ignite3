@@ -19,7 +19,7 @@
         <maven.test.failure.ignore>true</maven.test.failure.ignore>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <skipTests>true</skipTests>
-        <ignite.version>2.5.0</ignite.version>
+        <ignite.version>2.6.0</ignite.version>
     </properties>
 
     <dependencyManagement>

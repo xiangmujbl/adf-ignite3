@@ -3,6 +3,7 @@ package com.jnj.adf.ignite;
 import com.jnj.adf.ignite.common.Utils;
 import com.jnj.adf.ignite.domain.GridInfo;
 import org.apache.ignite.Ignite;
+import org.apache.ignite.IgniteCache;
 import org.apache.ignite.IgniteCluster;
 import org.apache.ignite.Ignition;
 import org.apache.ignite.cache.CacheMode;
@@ -36,8 +37,7 @@ public class MasterActivator {
                 logger.info("Cluster has server nodes : {}", nodes);
                 cluster.setBaselineTopology(nodes);
                 cluster.active(true);
-                if (cluster.active())
-                    initSystemCache();
+                initSystemCache();
             }
         }
     }
@@ -48,35 +48,44 @@ public class MasterActivator {
         Collection<String> existsNames = ignite.cacheNames();
 
         {
-            if(!existsNames.contains(CACHE_GRIDS)){
+            if (!existsNames.contains(CACHE_GRIDS)) {
                 // Create cache to store grid information
-                CacheConfiguration<String, GridInfo> cache = new CacheConfiguration<>(CACHE_GRIDS);
-                cache.setSqlSchema(SCHEMA_ADF);
-                cache.setCacheMode(CacheMode.REPLICATED);
+                CacheConfiguration<String, GridInfo> conf = new CacheConfiguration<>(CACHE_GRIDS);
+                conf.setSqlSchema(SCHEMA_ADF);
+                conf.setCacheMode(CacheMode.REPLICATED);
+                conf.setDataRegionName("Default_Region");
                 // gridCache.setSqlOnheapCacheEnabled(true);
-                cache.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_GRIDS, String.class, GridInfo.class)));
-                ignite.createCache(cache);
+                conf.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_GRIDS, String.class, GridInfo
+                        .class)));
+                IgniteCache<String, GridInfo> cache = ignite.createCache(conf);
+                String role = "master";
+                GridInfo grid = new GridInfo();
+                grid.setName(role);
+                grid.setAddress("127.0.0.1:10801");
+                cache.put(role, grid);
             }
         }
 
         {
-            if(!existsNames.contains(CACHE_PATH_GRID)){
+            if (!existsNames.contains(CACHE_PATH_GRID)) {
                 // Create cache to store the relationship between path and grid
                 CacheConfiguration<String, String> cache = new CacheConfiguration<>(CACHE_PATH_GRID);
                 cache.setSqlSchema(SCHEMA_ADF);
                 cache.setCacheMode(CacheMode.REPLICATED);
-                cache.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_PATH_GRID, String.class, String.class)));
+                cache.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_PATH_GRID, String.class,
+                        String.class)));
                 ignite.createCache(cache);
             }
         }
 
         {
-            if(!existsNames.contains(CACHE_GRID_PATH)){
+            if (!existsNames.contains(CACHE_GRID_PATH)) {
                 // Create cache to store the relationship between grid and path
                 CacheConfiguration<String, Set<String>> cache = new CacheConfiguration<>(CACHE_GRID_PATH);
                 cache.setSqlSchema(SCHEMA_ADF);
                 cache.setCacheMode(CacheMode.REPLICATED);
-                cache.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_GRID_PATH, String.class, String.class)));
+                cache.setQueryEntities(Collections.singleton(Utils.toQueryEntity(TABLE_GRID_PATH, String.class,
+                        String.class)));
                 ignite.createCache(cache);
             }
         }

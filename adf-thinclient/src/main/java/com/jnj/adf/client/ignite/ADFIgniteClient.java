@@ -12,6 +12,7 @@ import org.apache.ignite.configuration.ClientConfiguration;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jnj.adf.ignite.common.Constants.*;
 
@@ -22,6 +23,7 @@ import static com.jnj.adf.ignite.common.Constants.*;
  */
 public class ADFIgniteClient implements ADFClient {
 
+    private AtomicBoolean connected = new AtomicBoolean(false);
     private IgniteClient igniteClient = null;
 
     private final static Map<String, IgniteClient> CONNECTIONS = new ConcurrentHashMap<>();
@@ -36,6 +38,7 @@ public class ADFIgniteClient implements ADFClient {
         ClientConfiguration cfg = new ClientConfiguration().setAddresses(namingServer);
         try {
             igniteClient = Ignition.startClient(cfg);
+            connected.set(true);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(-1);
@@ -47,6 +50,7 @@ public class ADFIgniteClient implements ADFClient {
     public void disconnect() {
         try {
             igniteClient.close();
+            connected.set(false);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -54,7 +58,7 @@ public class ADFIgniteClient implements ADFClient {
 
     @Override
     public boolean isConnect(String group) {
-        return false;
+        return connected.get();
     }
 
     @Override
@@ -123,6 +127,9 @@ public class ADFIgniteClient implements ADFClient {
             if (client != null) {
                 ClientCache cache = client.getOrCreateCache(name);
                 return new ADFIgniteTable(cache);
+            } else {
+                ClientCache cache = igniteClient.getOrCreateCache(name);
+                return new ADFIgniteTable(cache);
             }
         }
         return null;
@@ -177,7 +184,8 @@ public class ADFIgniteClient implements ADFClient {
         if (igniteClient != null) {
             ClientCache<String, String> cache = igniteClient.getOrCreateCache(CACHE_PATH_GRID);
             String grid = cache.get(name);
-            return connectGrid(grid);
+            if (grid != null)
+                return connectGrid(grid);
         }
         return null;
     }

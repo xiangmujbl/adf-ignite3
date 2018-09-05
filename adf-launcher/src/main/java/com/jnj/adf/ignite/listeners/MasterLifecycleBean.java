@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Ignite lifecycle bean implementation
+ *
  * @author Tang
  */
 public class MasterLifecycleBean implements LifecycleBean {
@@ -27,6 +28,8 @@ public class MasterLifecycleBean implements LifecycleBean {
                 break;
             case AFTER_NODE_STOP:
                 logger.info("Node is stopping!!");
+                break;
+            default:
                 break;
         }
     }
